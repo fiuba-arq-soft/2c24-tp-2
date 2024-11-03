@@ -1,0 +1,17 @@
+- name: Update app
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Stop old version
+      command: pm2 stop app.js
+      ignore_errors: yes
+    - name: Extract new version
+      unarchive:
+        src: ../node/src.zip
+        dest: ~/.
+        owner: azureuser
+        group: azureuser
+    - name: Install dependencies
+      command: npm install
+    - name: Start new version
+      command: pm2 start app.js

@@ -1,0 +1,32 @@
+- name: Setup VMSS nodes
+  hosts: all
+  gather_facts: no
+  roles:
+    - { role: datadog.datadog, become: yes }
+  vars:
+    datadog_api_key: "{{ lookup('file', './ddog_api_key') }}"
+    datadog_site: "datadoghq.com"
+
+  tasks:
+    - name: Install unzip
+      apt:
+        name: unzip
+        state: present
+      become: yes
+    - name: Install node
+      shell: |
+        sudo apt-get update
+        sudo apt-get install -y ca-certificates curl gnupg
+        sudo mkdir -p /etc/apt/keyrings
+        curl https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+        NODE_MAJOR=20
+        echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+        sudo apt-get update
+        sudo apt-get install nodejs -y
+      args:
+        creates: /usr/bin/node
+      become: yes
+    - name: Install pm2
+      command: npm install pm2@latest -g
+      become: yes
+      
